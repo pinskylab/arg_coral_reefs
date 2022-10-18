@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: 
+    github_document:
+        toc: true
+        toc_depth: 3
+
+---
+
+# Setup
+```{r setup}
+library(data.table)
+library(ggplot2)
+
+# Web of Science citations
+wosgenetics <- fread('data/web_of_science/WoS_2020-10-18_population_genetics_coral.txt') # pop genetics & coral in Topic
+wosgenomics <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_coral.txt') # pop genomics & coral in Topic
+
+# transform
+sumgenetics <- wosgenetics[, .(npubs = .N, class = 'genetics'), by = PY]
+sumgenomics <- wosgenomics[, .(npubs = .N, class = 'genomics'), by = PY]
+sum <- rbind(sumgenetics, sumgenomics)
+```
+
+# Plot publication frequency
+```{r}
+ggplot(sum, aes(PY, npubs, color = class, group = class)) +
+    geom_line()
+```
+
+
