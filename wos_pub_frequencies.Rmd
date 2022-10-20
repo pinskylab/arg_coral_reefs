@@ -13,19 +13,35 @@ library(data.table)
 library(ggplot2)
 
 # Web of Science citations
-wosgenetics <- fread('data/web_of_science/WoS_2020-10-18_population_genetics_coral.txt') # pop genetics & coral in Topic
-wosgenomics <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_coral.txt') # pop genomics & coral in Topic
-
+wosgenetics <- fread('data/web_of_science/WoS_2020-10-18_population_genetics_coral.txt', quote = "") # pop genetics & coral in Topic
+wosgenomics <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_coral.txt', quote = "") # pop genomics & coral in Topic
+for(i in 1:25){
+    if(i ==1) wosall <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_1.txt', quote = "") # pop genomics in Topic, tranch 1
+    if(i>1){
+        temp <-fread(paste0('data/web_of_science/WoS_2020-10-18_population_genomics_', i, '.txt', quote = "")) # pop genomics in Topic, tranch i 
+        wosall <- rbind(wosall, temp)
+    }
+}
 # transform
 sumgenetics <- wosgenetics[, .(npubs = .N, class = 'genetics'), by = PY]
 sumgenomics <- wosgenomics[, .(npubs = .N, class = 'genomics'), by = PY]
+sumall <- wosall[, .(npubs = .N, class = 'all'), by = PY]
 sum <- rbind(sumgenetics, sumgenomics)
+sum <- merge(sum, sumall[, .(PY, npubsall = npubs)])
+sum[, fpubs := npubs/npubsall]
 ```
 
-# Plot publication frequency
+# Plot publication number
 ```{r}
 ggplot(sum, aes(PY, npubs, color = class, group = class)) +
     geom_line()
 ```
 
+
+# Plot publication fraction
+Y-axis is fraction of coral population genomics publications out of all population genomics publications
+```{r}
+ggplot(sum[class =='genomics'], aes(PY, fpubs, color = class, group = class)) +
+    geom_line()
+```
 
