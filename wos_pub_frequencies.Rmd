@@ -13,22 +13,24 @@ library(data.table)
 library(ggplot2)
 
 # Web of Science citations
-wosgenetics <- fread('data/web_of_science/WoS_2020-10-18_population_genetics_coral.txt', quote = "") # pop genetics & coral in Topic
-wosgenomics <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_coral.txt', quote = "") # pop genomics & coral in Topic
+wosgenetics <- fread('data/web_of_science/WoS_2022-10-18_population_genetics_coral.txt', quote = "") # "population genetics" & "coral" in Topic
+wosgenomics <- fread('data/web_of_science/WoS_2022-10-18_population_genomics_coral.txt', quote = "") # population genomics & coral in Topic
 for(i in 1:25){
-    if(i ==1) wosall <- fread('data/web_of_science/WoS_2020-10-18_population_genomics_1.txt', quote = "") # pop genomics in Topic, tranch 1
+    if(i ==1) wosall <- fread('data/web_of_science/WoS_2022-10-18_population_genomics_1.txt', quote = "") # "population genomics" in Topic, tranch 1
     if(i>1){
         temp <-fread(paste0('data/web_of_science/WoS_2020-10-18_population_genomics_', i, '.txt', quote = "")) # pop genomics in Topic, tranch i 
         wosall <- rbind(wosall, temp)
     }
 }
+
 # transform
 sumgenetics <- wosgenetics[, .(npubs = .N, class = 'genetics'), by = PY]
 sumgenomics <- wosgenomics[, .(npubs = .N, class = 'genomics'), by = PY]
 sumall <- wosall[, .(npubs = .N, class = 'all'), by = PY]
-sum <- rbind(sumgenetics, sumgenomics)
+sum <- rbind(sumgenetics[!is.na(PY),], sumgenomics[!is.na(PY),])
 sum <- merge(sum, sumall[, .(PY, npubsall = npubs)])
 sum[, fpubs := npubs/npubsall]
+sum[, cumpubs := cumsum(npubs), by = class]
 ```
 
 # Plot publication number
@@ -45,3 +47,15 @@ ggplot(sum[class =='genomics'], aes(PY, fpubs, color = class, group = class)) +
     geom_line()
 ```
 
+# Plot cumulative sum
+```{r}
+ggplot(sum, aes(PY, cumpubs, color = class)) +
+    geom_line()+
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black"),
+          legend.key=element_blank(),
+          axis.text=element_text(size=8),
+          axis.title=element_text(size=8))
+
+ggsave('figures/fig1.png', width=5, height=2.5, units = 'in')
+```
