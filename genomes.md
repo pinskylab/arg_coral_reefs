@@ -1,59 +1,182 @@
----
-title: "Identify coral reef genome assemblies"
-output: 
-    github_document:
-        toc: true
-        toc_depth: 3
+Identify coral reef genome assemblies
+================
 
----
+  - [Set up and load data](#set-up-and-load-data)
+  - [Find reef-associated taxa from Fishbase and
+    Sealifebase](#find-reef-associated-taxa-from-fishbase-and-sealifebase)
+  - [Mark reef species in NCBI](#mark-reef-species-in-ncbi)
+  - [Identify a preferred genome for each
+    species](#identify-a-preferred-genome-for-each-species)
+  - [Output list of reef genomes](#output-list-of-reef-genomes)
+  - [Plot of genomes available](#plot-of-genomes-available)
+
 ## Set up and load data
-```{r setup}
 
+``` r
 library(data.table)
 library(rfishbase)
 print(paste('Using newest of Fishbase available releases:', paste(available_releases(server = 'fishbase'), collapse = ', ')))
-print(paste('Using newest of Sealifebase available releases:', paste(available_releases(server = 'sealifebase'), collapse = ', ')))
-library(here)
+```
 
+    ## [1] "Using newest of Fishbase available releases: 21.06, 19.04"
+
+``` r
+print(paste('Using newest of Sealifebase available releases:', paste(available_releases(server = 'sealifebase'), collapse = ', ')))
+```
+
+    ## [1] "Using newest of Sealifebase available releases: 19.04, 21.11"
+
+``` r
+library(here)
+```
+
+    ## here() starts at /Users/mpinsky/Documents/Rutgers/ARG coral reef review/arg_coral_reefs
+
+``` r
 ncbi <- fread(here('data', 'ncbi', 'eukaryotes.csv')) # throws a warning about improper quoting, but appears to load correctly anyway
+```
+
+    ## Warning in fread(here("data", "ncbi", "eukaryotes.csv")): Found and
+    ## resolved improper quoting out-of-sample. First healed line 4436:
+    ## <<"Penstemon barbatus","Eukaryota;Plants;Land Plants","\"Duke\"
+    ## line","SAMN09598766","PRJNA479669","GCA_003313485.1","Contig",
+    ## 696.306,0,,"QOIQ01",18827,0,"2018-07-11T00:00:00Z",,>>. If the fields are not
+    ## quoted (e.g. field separator does not appear within any field), try quote="" to
+    ## avoid this warning.
+
+``` r
 setnames(ncbi, old = c('#Organism Name', 'Organism Groups', 'Size(Mb)', 'GC%', 'Release Date', 'GenBank FTP'), new = c('OrganismName', 'OrganismGroups', 'SizeMb', 'GBpercent', 'ReleaseDate', 'GenBankFTP'))
 ncbi[, Level := gsub(' ', '', Level)]
 ```
 
 ## Find reef-associated taxa from Fishbase and Sealifebase
-```{r find reef taxa}
+
+``` r
 # get reef-associated taxa
 slsppcodes <- data.table(fb_tbl('ecology', 'sealifebase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # reef species codes in sealifebase
+```
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10011 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+    
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+``` r
 fbsppcodes <- data.table(fb_tbl('ecology', 'fishbase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # and in fishbase
+```
 
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10007 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+``` r
 print(paste('Found', nrow(slsppcodes), 'spp from Sealifebase')) # 3888
-print(paste('Found', nrow(fbsppcodes), 'spp from Fishbase')) # 2430
+```
 
+    ## [1] "Found 3888 spp from Sealifebase"
+
+``` r
+print(paste('Found', nrow(fbsppcodes), 'spp from Fishbase')) # 2430
+```
+
+    ## [1] "Found 2430 spp from Fishbase"
+
+``` r
 # get their species names
 slspp <- data.table(fb_tbl('species', 'sealifebase'))[SpecCode %in% slsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
-fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
+```
 
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+
+``` r
+fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
+```
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+
+``` r
 # get their phylum/class/order/family
 slfam <- data.table(fb_tbl('families', 'sealifebase'))
+```
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+``` r
 fbfam <- data.table(fb_tbl('families', 'fishbase'))
+```
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+    
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+``` r
 slspp <- merge(slspp, slfam[, .(FamCode, Family, Order, Class, Phylum)], all.x = TRUE, by = 'FamCode')
 fbspp <- merge(fbspp, fbfam[, .(FamCode, Family, Order, Class)], all.x = TRUE, by = 'FamCode')
 fbspp[, Phylum := 'Chordata']
-
 ```
 
 ## Mark reef species in NCBI
-```{r mark genomes}
+
+``` r
 # Sealifebase
 slmatches <- sapply(slspp[, paste(Genus, Species)], grep, ncbi$OrganismName) # grep for Genus species
 slmatchnum <- sapply(slmatches, length) # number of matches for each species
 print(paste('SL species with genomes:', length(slmatchnum[slmatchnum > 0]))) # number of sealifebase reef species with an NCBI match. 74
+```
 
+    ## [1] "SL species with genomes: 74"
+
+``` r
 # Fishbase
 fbmatches <- sapply(fbspp[, paste(Genus, Species)], grep, ncbi$OrganismName) # grep for Genus species
 fbmatchnum <- sapply(fbmatches, length) # number of matches for each species
 print(paste('FB species with genomes:', length(fbmatchnum[fbmatchnum > 0]))) # fishbase reef species with an NCBI match. finds 75.
+```
 
+    ## [1] "FB species with genomes: 75"
+
+``` r
 # mark genomes that are reef species
 ncbi[, ":="(CoralReef = FALSE, Family = NA_character_, Order = NA_character_, Class = NA_character_, Phylum = NA_character_)]
 for(i in 1:length(slmatches)){ # for each sealifebase species
@@ -74,9 +197,14 @@ ncbi <- ncbi[CoralReef == TRUE, ]
 print(paste('Genomes from reef species:', ncbi[, .N]))
 ```
 
+    ## [1] "Genomes from reef species: 194"
+
 ## Identify a preferred genome for each species
-Some species have multiple genomes. Choose chromosome > scaffold > contig, then choose the newest release date, then the largest.
-```{r}
+
+Some species have multiple genomes. Choose chromosome \> scaffold \>
+contig, then choose the newest release date, then the largest.
+
+``` r
 ncbi[, selectedGenome := FALSE]
 sppnames <- ncbi[, unique(OrganismName)]
 for(i in 1:length(sppnames)){
@@ -140,22 +268,39 @@ for(i in 1:length(sppnames)){
 
 # check
 print(paste('Number of reef species genomes:', ncbi[, .N]))
+```
+
+    ## [1] "Number of reef species genomes: 194"
+
+``` r
 print(paste('Number of selected genomes:', ncbi[selectedGenome==TRUE, .N]))
+```
+
+    ## [1] "Number of selected genomes: 150"
+
+``` r
 print(paste('Min number of selected genomes per species (should be 1):', ncbi[, .(num = sum(selectedGenome)), by = OrganismName][, min(num)]))
+```
+
+    ## [1] "Min number of selected genomes per species (should be 1): 1"
+
+``` r
 print(paste('Max number of selected genomes per species (should be 1):', ncbi[, .(num = sum(selectedGenome)), by = OrganismName][, max(num)]))
 ```
 
-## Output list of reef genomes
-Some slight column renaming so easier to read into R in the future.
-```{r output table}
-write.csv(ncbi[, .(OrganismName, Phylum, Class, Order, Family, OrganismGroups, Strain, BioSample, BioProject, Assembly, Level, SizeMb, GBpercent, WGS, Scaffolds, CDS, ReleaseDate, GenBankFTP, selectedGenome)], file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
+    ## [1] "Max number of selected genomes per species (should be 1): 1"
 
+## Output list of reef genomes
+
+Some slight column renaming so easier to read into R in the future.
+
+``` r
+write.csv(ncbi[, .(OrganismName, Phylum, Class, Order, Family, OrganismGroups, Strain, BioSample, BioProject, Assembly, Level, SizeMb, GBpercent, WGS, Scaffolds, CDS, ReleaseDate, GenBankFTP, selectedGenome)], file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
 ```
 
-
-
 ## Plot of genomes available
-```{r plot}
+
+``` r
 # make a list of the taxonomic groups we want to show
 taxonnames = ncbi[selectedGenome == TRUE, .(Order, Class, Phylum)]
 taxonnames[, show := Phylum] # generally show Phylum
@@ -173,7 +318,11 @@ cols = c('#111111', '#999999', '#DDDDDD')
 par(mai = c(2.5, 2, 0, 0))
 barplot(genome_table, beside = TRUE, cex.names = 0.7, las = 2, ylab = 'Number of species', col = cols)
 legend('top', legend = rownames(genome_table), cex = 0.5, fill = cols, bty = 'n')
+```
 
+![](genomes_files/figure-gfm/plot-1.png)<!-- -->
+
+``` r
 # output to file
 png(filename = here('figures', 'fig4.png'), width=4, height = 2, units = 'in', res = 300)
 par(mai = c(1, 0.8, 0, 0))
@@ -182,7 +331,5 @@ legend('top', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols
 dev.off()
 ```
 
-
-
-
-
+    ## quartz_off_screen 
+    ##                 2
