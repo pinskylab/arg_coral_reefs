@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Plot coral reef pop gen study frequencies"
 output: 
     github_document:
         toc: true

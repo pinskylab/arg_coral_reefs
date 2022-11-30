@@ -1,0 +1,105 @@
+---
+title: "Identify coral reef genome assemblies"
+output: 
+    github_document
+        toc: true
+        toc_depth: 3
+
+---
+## Set up and load data
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(data.table)
+library(rfishbase)
+library(here)
+
+ncbi <- fread(here('data', 'ncbi', 'eukaryotes.csv')) # throws a warning about improper quoting, but appears to load correctly anyway
+```
+
+## Find reef-associated taxa from Fishbase and Sealifebase
+```{r}
+# get reef-associated taxa
+slsppcodes <- data.table(fb_tbl('ecology', 'sealifebase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # reef species codes in sealifebase
+fbsppcodes <- data.table(fb_tbl('ecology', 'fishbase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # and in fishbase
+
+nrow(slsppcodes) # 3888
+nrow(fbsppcodes) # 2430
+
+# get their species names
+slspp <- data.table(fb_tbl('species', 'sealifebase'))[SpecCode %in% slsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
+fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
+
+# get their phylum/class/order/family
+slfam <- data.table(fb_tbl('families', 'sealifebase'))
+fbfam <- data.table(fb_tbl('families', 'fishbase'))
+slspp <- merge(slspp, slfam[, .(FamCode, Family, Order, Class, Phylum)], all.x = TRUE, by = 'FamCode')
+fbspp <- merge(fbspp, fbfam[, .(FamCode, Family, Order, Class)], all.x = TRUE, by = 'FamCode')
+fbspp[, Phylum := 'Chordata']
+
+```
+
+## Mark reef species in NCBI
+```{r}
+# Sealifebase
+slmatches <- sapply(slspp[, paste(Genus, Species)], grep, ncbi$`#Organism Name`) # grep for Genus species
+slmatchnum <- sapply(slmatches, length) # number of matches for each species
+print(paste('SL species with genomes:', length(slmatchnum[slmatchnum > 0]))) # number of sealifebase reef species with an NCBI match. 74
+
+# Fishbase
+fbmatches <- sapply(fbspp[, paste(Genus, Species)], grep, ncbi$`#Organism Name`) # grep for Genus species
+fbmatchnum <- sapply(fbmatches, length) # number of matches for each species
+print(paste('FB species with genomes:', length(fbmatchnum[fbmatchnum > 0]))) # fishbase reef species with an NCBI match. finds 75.
+
+# mark genomes that are reef species
+ncbi[, ":="(CoralReef = FALSE, Family = NA_character_, Order = NA_character_, Class = NA_character_, Phylum = NA_character_)]
+for(i in 1:length(slmatches)){ # for each sealifebase species
+    if(length(slmatches[[i]])>0){
+        j <- slspp[, which(paste(Genus, Species) == names(slmatches)[i])]
+        if(length(j) != 1) stop(paste('i=', i, 'and found more than one row in slspp with this Genus Species'))
+        ncbi[slmatches[[i]], ":="(CoralReef = TRUE, Family = slspp$Family[j], Order = slspp$Order[j], Class = slspp$Class[j], Phylum = slspp$Phylum[j])] # adds metadata to all matching genomes. note that some spp have multiple genomes on NCBI    
+    }
+}
+for(i in 1:length(fbmatches)){ # for each fishbase species
+    if(length(fbmatches[[i]])>0){
+        j <- fbspp[, which(paste(Genus, Species) == names(fbmatches)[i])]
+        if(length(j) != 1) stop(paste('i=', i, 'and found more than one row in fbspp with this Genus Species'))
+        ncbi[fbmatches[[i]], ":="(CoralReef = TRUE, Family = fbspp$Family[j], Order = fbspp$Order[j], Class = fbspp$Class[j], Phylum = fbspp$Phylum[j])] # adds metadata to all matching genomes. note that some spp have multiple genomes on NCBI    
+    }
+}
+print(paste('Genomes from reef species:', ncbi[, sum(CoralReef)]))
+```
+
+## Output list of reef genomes
+Some slight column renaming so easier to read into R in the future.
+```{r}
+ncbi_clean <- ncbi[CoralReef == TRUE, .(OrganismName = `#Organism Name`, Phylum, Class, Order, Family, OrganismGroups = `Organism Groups`, Strain, BioSample, BioProject, Assembly, Level = gsub(' ', '', Level), SizeMb = `Size(Mb)`, GBpercent = `GC%`, WGS, Scaffolds, CDS, ReleaseDate = `Release Date`, GenBankFTP = `GenBank FTP`)]
+
+write.csv(ncbi_clean, file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
+
+```
+
+
+
+## Plot of genomes available
+```{r}
+# make a list of the taxonomic groups we want to show
+taxonnames = ncbi_clean[, .(Order, Class, Phylum)]
+taxonnames[, show := Phylum] # generally show Phylum
+taxonnames[Phylum == 'Chordata', show := Class] # for fishes, show class
+taxonnames[Phylum != 'Cnidaria' & Phylum != 'Chordata', show := 'Other']
+
+# display
+genome_table = table(ncbi_clean[, Level], taxonnames[, show])
+barplot(genome_table, beside = TRUE, cex.names = 0.7, legend.text = TRUE, las = 2)
+
+# output to file
+png(filename = here('figures', 'fig4.png'), width=4, height = 2, units = 'in', res = 300)
+barplot(genome_table, beside = TRUE, cex.names = 0.7, legend.text = TRUE, las = 2)
+dev.off()
+```
+
+
+
+
+
