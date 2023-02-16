@@ -5,6 +5,7 @@ Identify coral reef genome assemblies
   - [Find reef-associated taxa from Fishbase and
     Sealifebase](#find-reef-associated-taxa-from-fishbase-and-sealifebase)
   - [Mark reef species in NCBI](#mark-reef-species-in-ncbi)
+  - [Check for taxa of interest](#check-for-taxa-of-interest)
   - [Identify a preferred genome for each
     species](#identify-a-preferred-genome-for-each-species)
   - [Output list of reef genomes](#output-list-of-reef-genomes)
@@ -18,7 +19,7 @@ library(rfishbase)
 print(paste('Using newest of Fishbase available releases:', paste(available_releases(server = 'fishbase'), collapse = ', ')))
 ```
 
-    ## [1] "Using newest of Fishbase available releases: 21.06, 19.04"
+    ## [1] "Using newest of Fishbase available releases: 23.01, 21.06, 19.04"
 
 ``` r
 print(paste('Using newest of Sealifebase available releases:', paste(available_releases(server = 'sealifebase'), collapse = ', ')))
@@ -56,27 +57,27 @@ ncbi[, Level := gsub(' ', '', Level)]
 slsppcodes <- data.table(fb_tbl('ecology', 'sealifebase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # reef species codes in sealifebase
 ```
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10011 milliseconds
-
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
     
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
 
 ``` r
 fbsppcodes <- data.table(fb_tbl('ecology', 'fishbase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # and in fishbase
 ```
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10006 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10007 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
 
@@ -90,34 +91,30 @@ print(paste('Found', nrow(slsppcodes), 'spp from Sealifebase')) # 3888
 print(paste('Found', nrow(fbsppcodes), 'spp from Fishbase')) # 2430
 ```
 
-    ## [1] "Found 2430 spp from Fishbase"
+    ## [1] "Found 2429 spp from Fishbase"
 
 ``` r
 # get their species names
 slspp <- data.table(fb_tbl('species', 'sealifebase'))[SpecCode %in% slsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
 ```
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
-
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
-
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
-
-``` r
-fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
-```
-
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
 
+``` r
+fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$SpecCode, .(SpecCode, Genus, Species, FBname, FamCode)]
+```
+
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10007 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
 
@@ -126,29 +123,25 @@ fbspp <- data.table(fb_tbl('species', 'fishbase'))[SpecCode %in% fbsppcodes$Spec
 slfam <- data.table(fb_tbl('families', 'sealifebase'))
 ```
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
-    
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
-    
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10004 milliseconds
 
 ``` r
 fbfam <- data.table(fb_tbl('families', 'fishbase'))
 ```
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10000 milliseconds
-    
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
 
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
-
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
-    
-    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10002 milliseconds
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10003 milliseconds
 
     ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10001 milliseconds
+
+    ## Warning: Error in curl::curl_fetch_memory(file, handle): Timeout was reached: [hash-archive.org] Connection timed out after 10005 milliseconds
 
 ``` r
 slspp <- merge(slspp, slfam[, .(FamCode, Family, Order, Class, Phylum)], all.x = TRUE, by = 'FamCode')
@@ -174,7 +167,7 @@ fbmatchnum <- sapply(fbmatches, length) # number of matches for each species
 print(paste('FB species with genomes:', length(fbmatchnum[fbmatchnum > 0]))) # fishbase reef species with an NCBI match. finds 75.
 ```
 
-    ## [1] "FB species with genomes: 75"
+    ## [1] "FB species with genomes: 74"
 
 ``` r
 # mark genomes that are reef species
@@ -193,11 +186,67 @@ for(i in 1:length(fbmatches)){ # for each fishbase species
         ncbi[fbmatches[[i]], ":="(CoralReef = TRUE, Family = fbspp$Family[j], Order = fbspp$Order[j], Class = fbspp$Class[j], Phylum = fbspp$Phylum[j])] # adds metadata to all matching genomes. note that some spp have multiple genomes on NCBI    
     }
 }
-ncbi <- ncbi[CoralReef == TRUE, ]
-print(paste('Genomes from reef species:', ncbi[, .N]))
+print(paste('Genomes from reef species:', ncbi[CoralReef == TRUE, .N]))
 ```
 
-    ## [1] "Genomes from reef species: 194"
+    ## [1] "Genomes from reef species: 193"
+
+## Check for taxa of interest
+
+There’s a noticeable lack of Symbiodiniaceae.
+
+``` r
+# Symbionts in sealifebase?
+slspp[grep('Symbio', slspp$Family), ] # not classified as Symbiodiniaceae
+```
+
+    ## Empty data.table (0 rows and 9 cols): FamCode,SpecCode,Genus,Species,FBname,Family...
+
+``` r
+slspp[grep('Symbio', slspp$Genus), ] # 1 Symbiodinium
+```
+
+    ##    FamCode SpecCode        Genus      Species FBname          Family
+    ## 1:    3950   165913 Symbiodinium thermophilum   <NA> Blastodiniaceae
+    ##             Order       Class    Phylum
+    ## 1: Blastodiniales Dinophyceae Dinophyta
+
+``` r
+slspp[grep('Suess', slspp$Order), ] # not classified as Suessiales
+```
+
+    ## Empty data.table (0 rows and 9 cols): FamCode,SpecCode,Genus,Species,FBname,Family...
+
+``` r
+slspp[grep('Dinophyceae', slspp$Class), ] # 1 Dinophyceae
+```
+
+    ##    FamCode SpecCode        Genus      Species FBname          Family
+    ## 1:    3950   165913 Symbiodinium thermophilum   <NA> Blastodiniaceae
+    ##             Order       Class    Phylum
+    ## 1: Blastodiniales Dinophyceae Dinophyta
+
+``` r
+slspp[grep('Symbio', slspp$Genus), ]
+```
+
+    ##    FamCode SpecCode        Genus      Species FBname          Family
+    ## 1:    3950   165913 Symbiodinium thermophilum   <NA> Blastodiniaceae
+    ##             Order       Class    Phylum
+    ## 1: Blastodiniales Dinophyceae Dinophyta
+
+``` r
+# Symbionts in NCBI?
+grep('Breviolum|Cladocopium|Durusdinium|Freudenthalidium|Halluxium|Miliolidium|Symbiodinium', ncbi$OrganismName, value = TRUE) # look for genera: found 14
+```
+
+    ##  [1] "Symbiodinium sp. clade A Y106" "Symbiodinium microadriaticum" 
+    ##  [3] "Breviolum minutum Mf 1.05b.01" "Symbiodinium sp. clade C Y103"
+    ##  [5] "Symbiodinium kawagutii"        "Symbiodinium natans"          
+    ##  [7] "Symbiodinium necroappetens"    "Symbiodinium pilosum"         
+    ##  [9] "Cladocopium goreaui"           "Symbiodinium microadriaticum" 
+    ## [11] "Symbiodinium sp. KB8"          "Symbiodinium sp. CCMP2592"    
+    ## [13] "Symbiodinium microadriaticum"  "Symbiodinium sp. CCMP2456"
 
 ## Identify a preferred genome for each species
 
@@ -205,56 +254,57 @@ Some species have multiple genomes. Choose chromosome \> scaffold \>
 contig, then choose the newest release date, then the largest.
 
 ``` r
-ncbi[, selectedGenome := FALSE]
-sppnames <- ncbi[, unique(OrganismName)]
+ncbi_reef <- ncbi[CoralReef == TRUE, ] # trim to just coral reef genomes
+ncbi_reef[, selectedGenome := FALSE]
+sppnames <- ncbi_reef[, unique(OrganismName)]
 for(i in 1:length(sppnames)){
-    j <- ncbi[, which(OrganismName == sppnames[i])]
-    if(length(j)==0) stop(paste('i=', i, 'but could not find it in ncbi data.table'))
-    if(length(j)==1) ncbi[j, selectedGenome := TRUE] # if only one species, mark it
+    j <- ncbi_reef[, which(OrganismName == sppnames[i])]
+    if(length(j)==0) stop(paste('i=', i, 'but could not find it in ncbi_reef data.table'))
+    if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # if only one species, mark it
     if(length(j)>1){
-        j <- ncbi[, which(Level == 'Chromosome' & OrganismName == sppnames[i])]
+        j <- ncbi_reef[, which(Level == 'Chromosome' & OrganismName == sppnames[i])]
         if(length(j)>0){
-            if(length(j)==1) ncbi[j, selectedGenome := TRUE] # if only one chromosome-scale assembly, mark it
+            if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # if only one chromosome-scale assembly, mark it
             if(length(j)>1){
-                maxDate <- ncbi[j, max(as.Date(ReleaseDate))]
-                j <- ncbi[, which(Level == 'Chromosome' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest chromosome-scale assembly
-                if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                maxDate <- ncbi_reef[j, max(as.Date(ReleaseDate))]
+                j <- ncbi_reef[, which(Level == 'Chromosome' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest chromosome-scale assembly
+                if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                 if(length(j)>1){
-                    maxSize <- ncbi[j, max(SizeMb)]
-                    j <- ncbi[, which(Level == 'Chromosome' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest chromosome-scale assembly
-                    if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                    maxSize <- ncbi_reef[j, max(SizeMb)]
+                    j <- ncbi_reef[, which(Level == 'Chromosome' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest chromosome-scale assembly
+                    if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                     if(length(j)>1) stop(paste('i=', i, ', need to handle the case when multiple chromosome-scale assemblies have the same release date and size'))
                 } 
             }
         }
         if(length(j) == 0){
-            j <- ncbi[, which(Level == 'Scaffold' & OrganismName == sppnames[i])]
+            j <- ncbi_reef[, which(Level == 'Scaffold' & OrganismName == sppnames[i])]
             if(length(j)>0){
-                if(length(j)==1) ncbi[j, selectedGenome := TRUE] # if only one scaffold-scale assembly, mark it
+                if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # if only one scaffold-scale assembly, mark it
                 if(length(j)>1){
-                    maxDate <- ncbi[j, max(as.Date(ReleaseDate))]
-                    j <- ncbi[, which(Level == 'Scaffold' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest scaffold-scale assembly
-                    if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                    maxDate <- ncbi_reef[j, max(as.Date(ReleaseDate))]
+                    j <- ncbi_reef[, which(Level == 'Scaffold' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest scaffold-scale assembly
+                    if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                     if(length(j)>1){
-                        maxSize <- ncbi[j, max(SizeMb)]
-                        j <- ncbi[, which(Level == 'Scaffold' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest scaffolds-scale assembly
-                        if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                        maxSize <- ncbi_reef[j, max(SizeMb)]
+                        j <- ncbi_reef[, which(Level == 'Scaffold' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest scaffolds-scale assembly
+                        if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                         if(length(j)>1) stop(paste('i=', i, ', need to handle the case when multiple scaffold-scale assemblies have the same release date and size'))
                     }
                 }
             }
             if(length(j) == 0){
-                j <- ncbi[, which(Level == 'Contig' & OrganismName == sppnames[i])]
+                j <- ncbi_reef[, which(Level == 'Contig' & OrganismName == sppnames[i])]
                 if(length(j)>0){
-                    if(length(j)==1) ncbi[j, selectedGenome := TRUE] # if only one contig-scale assembly, mark it
+                    if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # if only one contig-scale assembly, mark it
                     if(length(j)>1){
-                        maxDate <- ncbi[j, max(as.Date(ReleaseDate))]
-                        j <- ncbi[, which(Level == 'Contig' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest contig-scale assembly
-                        if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                        maxDate <- ncbi_reef[j, max(as.Date(ReleaseDate))]
+                        j <- ncbi_reef[, which(Level == 'Contig' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate)] # find the newest contig-scale assembly
+                        if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                         if(length(j)>1){
-                            maxSize <- ncbi[j, max(SizeMb)]
-                            j <- ncbi[, which(Level == 'Contig' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest chromosome-scale assembly
-                            if(length(j)==1) ncbi[j, selectedGenome := TRUE] # mark it
+                            maxSize <- ncbi_reef[j, max(SizeMb)]
+                            j <- ncbi_reef[, which(Level == 'Contig' & OrganismName == sppnames[i] & as.Date(ReleaseDate) == maxDate & SizeMb == maxSize)] # find the largest chromosome-scale assembly
+                            if(length(j)==1) ncbi_reef[j, selectedGenome := TRUE] # mark it
                             if(length(j)>1) stop(paste('i=', i, ', need to handle the case when multiple contig-scale assemblies have the same release date and size'))
                         }
                     }
@@ -267,25 +317,25 @@ for(i in 1:length(sppnames)){
 }
 
 # check
-print(paste('Number of reef species genomes:', ncbi[, .N]))
+print(paste('Number of reef species genomes:', ncbi_reef[, .N]))
 ```
 
-    ## [1] "Number of reef species genomes: 194"
+    ## [1] "Number of reef species genomes: 193"
 
 ``` r
-print(paste('Number of selected genomes:', ncbi[selectedGenome==TRUE, .N]))
+print(paste('Number of selected genomes:', ncbi_reef[selectedGenome==TRUE, .N]))
 ```
 
-    ## [1] "Number of selected genomes: 150"
+    ## [1] "Number of selected genomes: 149"
 
 ``` r
-print(paste('Min number of selected genomes per species (should be 1):', ncbi[, .(num = sum(selectedGenome)), by = OrganismName][, min(num)]))
+print(paste('Min number of selected genomes per species (should be 1):', ncbi_reef[, .(num = sum(selectedGenome)), by = OrganismName][, min(num)]))
 ```
 
     ## [1] "Min number of selected genomes per species (should be 1): 1"
 
 ``` r
-print(paste('Max number of selected genomes per species (should be 1):', ncbi[, .(num = sum(selectedGenome)), by = OrganismName][, max(num)]))
+print(paste('Max number of selected genomes per species (should be 1):', ncbi_reef[, .(num = sum(selectedGenome)), by = OrganismName][, max(num)]))
 ```
 
     ## [1] "Max number of selected genomes per species (should be 1): 1"
@@ -295,39 +345,57 @@ print(paste('Max number of selected genomes per species (should be 1):', ncbi[, 
 Some slight column renaming so easier to read into R in the future.
 
 ``` r
-write.csv(ncbi[, .(OrganismName, Phylum, Class, Order, Family, OrganismGroups, Strain, BioSample, BioProject, Assembly, Level, SizeMb, GBpercent, WGS, Scaffolds, CDS, ReleaseDate, GenBankFTP, selectedGenome)], file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
+write.csv(ncbi_reef[, .(OrganismName, Phylum, Class, Order, Family, OrganismGroups, Strain, BioSample, BioProject, Assembly, Level, SizeMb, GBpercent, WGS, Scaffolds, CDS, ReleaseDate, GenBankFTP, selectedGenome)], file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
 ```
 
 ## Plot of genomes available
 
 ``` r
 # make a list of the taxonomic groups we want to show
-taxonnames = ncbi[selectedGenome == TRUE, .(Order, Class, Phylum)]
+taxonnames <- ncbi_reef[selectedGenome == TRUE, .(Order, Class, Phylum)]
 taxonnames[, show := Phylum] # generally show Phylum
 taxonnames[Phylum == 'Chordata', show := Class] # for fishes, show class
-taxonnames[Phylum != 'Cnidaria' & Phylum != 'Chordata', show := 'Other non-Chordates']
-levs = taxonnames[, unique(show)]
-levs <- levs[order(levs)]
-i = which(levs == 'Cnidaria'); levs = c(levs[-i], levs[i]) # move Cnidarians to end of list
-i = which(levs == 'Other non-Chordates'); levs = c(levs[-i], levs[i]) # move other inverts to end of list
+levs <- taxonnames[, unique(show)]
+levsclass <- taxonnames[Phylum == 'Chordata', unique(Class)]
+levs <- levs[order(levs)] # make alphabetical
+i = which(levs %in% levsclass)
+levs = c(levs[-i], levs[i]) # move chordates to end of list
 taxonnames[, show := factor(show, levels = levs)]
 
 # display
-genome_table = table(ncbi[selectedGenome == TRUE, factor(Level, levels = c('Chromosome', 'Scaffold', 'Contig'))], taxonnames[, show]) # also re-order the factor levels
+genome_table = table(ncbi_reef[selectedGenome == TRUE, factor(Level, levels = c('Chromosome', 'Scaffold', 'Contig'))], taxonnames[, show]) # also re-order the factor levels
 cols = c('#111111', '#999999', '#DDDDDD')
 par(mai = c(2.5, 2, 0, 0))
 barplot(genome_table, beside = TRUE, cex.names = 0.7, las = 2, ylab = 'Number of species', col = cols)
-legend('top', legend = rownames(genome_table), cex = 0.5, fill = cols, bty = 'n')
+legend('topright', legend = rownames(genome_table), cex = 0.5, fill = cols, bty = 'n')
+mtext('Chordates', side = 1, line = 5.5, adj = 0.6, cex = 0.7)
+arrows(33, -24.5, 40, -24.5, code = 2, xpd = TRUE, length = 0.15)
 ```
 
 ![](genomes_files/figure-gfm/plot-1.png)<!-- -->
 
 ``` r
 # output to file
-png(filename = here('figures', 'fig4.png'), width=4, height = 2, units = 'in', res = 300)
-par(mai = c(1, 0.8, 0, 0))
+png(filename = here('figures', 'fig5.png'), width=4, height = 2, units = 'in', res = 300)
+par(mai = c(1, 0.5, 0.1, 0), tcl = -0.1, mgp = c(1.5,0.4, 0))
 barplot(genome_table, beside = TRUE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
-legend('top', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols)
+legend('topright', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols)
+mtext('Chordates', side = 1, line = 3.3, adj = 0.6, cex = 0.6)
+arrows(33.5, -35, 40, -35, code = 2, xpd = TRUE, length = 0.10)
+dev.off()
+```
+
+    ## quartz_off_screen 
+    ##                 2
+
+``` r
+# output to file
+pdf(file = here('figures', 'fig5.pdf'), width=4, height = 2)
+par(mai = c(1, 0.5, 0.1, 0), tcl = -0.1, mgp = c(1.5,0.4, 0))
+barplot(genome_table, beside = TRUE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
+legend('topright', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols)
+mtext('Chordates', side = 1, line = 3.3, adj = 0.6, cex = 0.6)
+arrows(33.5, -35, 40, -35, code = 2, xpd = TRUE, length = 0.10)
 dev.off()
 ```
 

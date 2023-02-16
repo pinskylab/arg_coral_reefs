@@ -60,4 +60,5 @@ ggplot(sum, aes(PY, cumpubs, color = class)) +
           axis.title=element_text(size=12))
 
 ggsave('figures/fig1.png', width=5, height=2.5, units = 'in')
+ggsave('figures/fig1.pdf', width=5, height=2.5, units = 'in')
 ```
