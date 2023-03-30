@@ -20,8 +20,11 @@ setnames(ncbi, old = c('#Organism Name', 'Organism Groups', 'Size(Mb)', 'GC%', '
 ncbi[, Level := gsub(' ', '', Level)]
 ```
 
-## Find reef-associated taxa from Fishbase and Sealifebase
-```{r find reef taxa}
+## Prepare data table
+Skip this section if already done and tables/reefgenomes.csv is up-to-date
+
+### Find reef-associated taxa from Fishbase and Sealifebase
+```{r find reef taxa, eval = FALSE}
 # get reef-associated taxa
 slsppcodes <- data.table(fb_tbl('ecology', 'sealifebase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # reef species codes in sealifebase
 fbsppcodes <- data.table(fb_tbl('ecology', 'fishbase'))[as.logical(CoralReefs)==TRUE, .(SpecCode, CoralReefs)] # and in fishbase
@@ -42,8 +45,8 @@ fbspp[, Phylum := 'Chordata']
 
 ```
 
-## Mark reef species in NCBI
-```{r mark genomes}
+### Mark reef species in NCBI
+```{r mark genomes, eval = FALSE}
 # Sealifebase
 slmatches <- sapply(slspp[, paste(Genus, Species)], grep, ncbi$OrganismName) # grep for Genus species
 slmatchnum <- sapply(slmatches, length) # number of matches for each species
@@ -74,9 +77,9 @@ print(paste('Genomes from reef species:', ncbi[CoralReef == TRUE, .N]))
 ```
 
 
-## Check for taxa of interest
+### Check for taxa of interest
 There's a noticeable lack of Symbiodiniaceae.
-```{r}
+```{r, eval = FALSE}
 # Symbionts in sealifebase?
 slspp[grep('Symbio', slspp$Family), ] # not classified as Symbiodiniaceae
 slspp[grep('Symbio', slspp$Genus), ] # 1 Symbiodinium
@@ -91,9 +94,9 @@ grep('Breviolum|Cladocopium|Durusdinium|Freudenthalidium|Halluxium|Miliolidium|S
 
 
 
-## Identify a preferred genome for each species
+### Identify a preferred genome for each species
 Some species have multiple genomes. Choose chromosome > scaffold > contig, then choose the newest release date, then the largest.
-```{r}
+```{r, eval = FALSE}
 ncbi_reef <- ncbi[CoralReef == TRUE, ] # trim to just coral reef genomes
 ncbi_reef[, selectedGenome := FALSE]
 sppnames <- ncbi_reef[, unique(OrganismName)]
@@ -163,17 +166,22 @@ print(paste('Min number of selected genomes per species (should be 1):', ncbi_re
 print(paste('Max number of selected genomes per species (should be 1):', ncbi_reef[, .(num = sum(selectedGenome)), by = OrganismName][, max(num)]))
 ```
 
-## Output list of reef genomes
+### Output list of reef genomes
 Some slight column renaming so easier to read into R in the future.
-```{r output table}
+```{r output table, eval = FALSE}
 write.csv(ncbi_reef[, .(OrganismName, Phylum, Class, Order, Family, OrganismGroups, Strain, BioSample, BioProject, Assembly, Level, SizeMb, GBpercent, WGS, Scaffolds, CDS, ReleaseDate, GenBankFTP, selectedGenome)], file = here('tables', 'reefgenomes.csv'), row.names = FALSE)
 
 ```
 
+## Make plots
 
+### Read in list of genomes
+```{r read in table}
+ncbi_reef <- as.data.table(read.csv(here('tables', 'reefgenomes.csv')))
+```
 
-## Plot of genomes available
-```{r plot}
+### Plot of genomes available
+```{r plot, fig.width=3, fig.height=4}
 # make a list of the taxonomic groups we want to show
 taxonnames <- ncbi_reef[selectedGenome == TRUE, .(Order, Class, Phylum)]
 taxonnames[, show := Phylum] # generally show Phylum
@@ -189,28 +197,28 @@ taxonnames[, show := factor(show, levels = levs)]
 genome_table = table(ncbi_reef[selectedGenome == TRUE, factor(Level, levels = c('Chromosome', 'Scaffold', 'Contig'))], taxonnames[, show]) # also re-order the factor levels
 cols = c('#111111', '#999999', '#DDDDDD')
 par(mai = c(2.5, 2, 0, 0))
-barplot(genome_table, beside = TRUE, cex.names = 0.7, las = 2, ylab = 'Number of species', col = cols)
+barplot(genome_table, beside = FALSE, cex.names = 0.7, las = 2, ylab = 'Number of species', col = cols)
 legend('topright', legend = rownames(genome_table), cex = 0.5, fill = cols, bty = 'n')
-mtext('Chordates', side = 1, line = 5.5, adj = 0.6, cex = 0.7)
-arrows(33, -24.5, 40, -24.5, code = 2, xpd = TRUE, length = 0.15)
+mtext('Chordates', side = 1, line = 5.5, adj = 0.62, cex = 0.7)
+arrows(10.5, -14.5, 14, -14.5, code = 2, xpd = TRUE, length = 0.15)
 
 
-# output to file
-png(filename = here('figures', 'fig5.png'), width=4, height = 2, units = 'in', res = 300)
+# output to png
+png(filename = here('figures', 'fig5.png'), width=3, height = 4, units = 'in', res = 300)
 par(mai = c(1, 0.5, 0.1, 0), tcl = -0.1, mgp = c(1.5,0.4, 0))
-barplot(genome_table, beside = TRUE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
+barplot(genome_table, beside = FALSE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
 legend('topright', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols)
-mtext('Chordates', side = 1, line = 3.3, adj = 0.6, cex = 0.6)
-arrows(33.5, -35, 40, -35, code = 2, xpd = TRUE, length = 0.10)
+mtext('Chordates', side = 1, line = 3.3, adj = 0.65, cex = 0.6)
+arrows(11, -20, 14, -20, code = 2, xpd = TRUE, length = 0.10)
 dev.off()
 
-# output to file
-pdf(file = here('figures', 'fig5.pdf'), width=4, height = 2)
+# output to pdf
+pdf(file = here('figures', 'fig5.pdf'), width=3, height = 4)
 par(mai = c(1, 0.5, 0.1, 0), tcl = -0.1, mgp = c(1.5,0.4, 0))
-barplot(genome_table, beside = TRUE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
+barplot(genome_table, beside = FALSE, cex.names = 0.5, cex.axis = 0.5, cex.lab = 0.5, las = 2, ylab = 'Number of species', col = cols)
 legend('topright', legend = rownames(genome_table), cex = 0.5, bty = 'n', fill = cols)
-mtext('Chordates', side = 1, line = 3.3, adj = 0.6, cex = 0.6)
-arrows(33.5, -35, 40, -35, code = 2, xpd = TRUE, length = 0.10)
+mtext('Chordates', side = 1, line = 3.3, adj = 0.65, cex = 0.6)
+arrows(11, -20, 14, -20, code = 2, xpd = TRUE, length = 0.10)
 dev.off()
 ```
 
